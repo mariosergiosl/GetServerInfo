@@ -1,23 +1,23 @@
 #!/bin/bash
 #===================================================================================
 #
-# FILE: stale-links.sh
+# FILE: get-info.bash
 #
-# USAGE: stale-links.sh [-d] [-l] [-oD logfile] [-h] [starting directories]
+# USAGE: get-info.bash
 #
-# DESCRIPTION: List and/or delete all stale links in directory trees.
-# The default starting directory is the current directory.
-# Don’t descend directories on other filesystems.
+# DESCRIPTION: Get files, info and data to servers.
+# 
+# 
 #
 # OPTIONS: see function ’usage’ below
 # REQUIREMENTS: ---
 # BUGS: ---
 # NOTES: ---
-# AUTHOR: Dr.-Ing. Fritz Mehner (fgm), mehner.fritz@fh-swf.de
-# COMPANY: FH Südwestfalen, Iserlohn
-# VERSION: 1.3
-# CREATED: 12.05.2002 - 12:36:50
-# REVISION: 20.09.2004
+# AUTHOR: Mario Luz, mluz@suse.com
+# COMPANY: Suse
+# VERSION: Drafth 0.3
+# CREATED: 25.09.2014 - 01:12:50
+# REVISION: 01-25.09.2014
 #===================================================================================
 
 
