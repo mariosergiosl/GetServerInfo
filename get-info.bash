@@ -1,4 +1,3 @@
-
 #!/bin/bash
 #===================================================================================
 #
@@ -24,257 +23,355 @@
 
 
 #----------------------------------------------------------------------
-# verifica localizacao do /tmp e espaco em disco
+# declaracao de variaveis
 #----------------------------------------------------------------------
 STARTSCRIPT=`date +%s.%N`
-OUTPUTFOLDER="/tmp/GETFILES"
-OUTPUTLOG="getfiles-"`hostname -a`".log"
-df -h | grep /tmp
-TMPPART=$?
-ROOTDIR=`df -h / | grep "/" | awk '{print $4}'`
-TMPDIR=`df -h / | grep "/tmp" | awk '{print $4}'`
+TMP_FOLDER_TO_FILES="/tmp/GETFILES"
+ZIP_BIN_PATH=`which zip`
+FILE_TMP_ETC_ZIP=$TMP_FOLDER_TO_FILES"/FILE_ETC.zip"
+FILE_TMP_VAR_ZIP=$TMP_FOLDER_TO_FILES"/FILE_VAR.zip"
+FILE_TMP_COMMAND_OUT_LOG=$TMP_FOLDER_TO_FILES"/COMMAND_OUT_LOG.log"
+
+#----------------------------------------------------------------------
+# pastas do /etc para copia
+#----------------------------------------------------------------------
+FOLDERS_ETC_TO_COPY=( 'init.d' 'rsyslog.d' 'sysctl.d' 'rcS.d' 'rc[0-6].d' 'profile.d' 'modprobe.d' 'pam.d' 'apache' 'grub.d' 'logrotate.d' 'init' 'init.d' 'www' 'skel' 'mysql' 'postfix' 'cron.d' 'cron.daily' 'cron.hourly' 'cron.monthly' 'cron.weekly' 'default' )
+#----------------------------------------------------------------------
+# arquivos do /etc para copia
+#----------------------------------------------------------------------
+FILES_ETC_TO_COPY=( 'rsyslog.conf' 'sysctl.conf' 'rc.local' 'profile' 'modules' 'motd' 'passwd' 'pam.conf' 'nsswitch.conf' 'group' 'services' 'hosts' 'hosts.allow' 'hosts.deny' 'resolv.conf' 'bashrc' 'mtab' 'fstab' 'crontab' 'bash.bashrc' 'issue' 'issue.net' 'aliases' )
+#----------------------------------------------------------------------
+# pastas do /var/log para copia
+#----------------------------------------------------------------------
+FOLDERS_VAR_TO_COPY=( 'messages*' 'dmesg*' 'boot.log*' 'auth.log*' 'daemon.log*' 'dpkg.log*' 'kern.log*' 'lastlog*' 'maillog*' 'mail.log*' 'user.log*' 'Xorg.x.log*' 'alternatives.log*' 'btmp*' 'cups*' 'anaconda.log*' 'yum.log*' 'cron*' 'secure*' 'wtmp*' 'utmp*' 'faillog*' 'httpd*' 'www*' 'apache2*' 'lighttpd*' 'conman*' 'mail*' 'prelink*' 'audit*' 'setroubleshoot*' 'samba*' 'sa*' 'sssd*' 'mysql*' 'postgre*' 'posgre*' )
+#----------------------------------------------------------------------
+# arquivos do /var/log para copia
+#----------------------------------------------------------------------
+FILES_VAR_TO_COPY=()
+#----------------------------------------------------------------------
+# comandos a serem executados
+#----------------------------------------------------------------------
+COMMAND_LIST=( 'hostname -s' 'hostname -d' 'hostname -f' 'hostname -i' 'ip -4 address show' 'netstat -nr' 'netstat -i' 'free -m' 'vmstat' 'ps auxf | sort -nr -k 4 | head -5' 'bash --version' 'cat /proc/cpuinfo' 'lscpu' 'dmidecode -t processor' 'cat /proc/meminfo' 'dmidecode -t memory' 'df -h' 'cat /proc/partitions' 'uname -a' 'cat /proc/version' 'uptime' 'ps aux | grep java' 'ps auxww' 'ulimit -a' 'perl --version' 'php --version' 'python --version' 'multpath -l' 'pvs' 'pvdisplay' 'vgs' 'vgdisplay' 'lvs' 'lvdisplay' 'fdisk -l' 'dmesg' 'lshw -short' 'hwinfo --short' 'lspci' 'lsscsi' 'cat /proc/scsi/scsi' 'lsusb' 'lsblk' 'dmidecode -t bios' )
+# rever sintaxe dos comandos
+# 'nameserverips=$(sed -e '/^$/d' /etc/resolv.conf | awk '{if (tolower($1)=="nameserver") print $2}') ; echo $nameserverips'
+#'echo "Usuarios ativos," ; w | cut -d ' ' -f 1 | grep -v USER | sort -u'
+#----------------------------------------------------------------------
+# dicionario da lista de comandos
+#----------------------------------------------------------------------
+COMMAND_LIST_DICT=('echo "Nome do Servidor, " ; hostname -s' 'echo "Nome do Dominio DNS, " ; hostname -d' 'echo "FQDN," ; hostname -f' 'echo "Endereco IP" ; hostname -i' 'echo "Nome e IP dos servidores DNS," ; nameserverips=$(sed -e '/^$/d' /etc/resolv.conf | awk '{if (tolower($1)=="nameserver") print $2}') ; echo $nameserverips' 'echo "Endereco IP," ; ip -4 address show' 'echo "Processos 1 (Portas e enderecos)," ; netstat -nr' 'echo "Processos 2 (Portas e enderecos)," ; netstat -i' 'echo "Memoria usada e livre," ; free -m' 'echo "Stataistica de memoria virtual," ; vmstat' 'echo "Top 5 - Processos que utilizam memoria," ; ps auxf | sort -nr -k 4 | head -5' 'echo "Versao do Bash," ; bash --version' 'echo "Informacoes de CPU 1," ; cat /proc/cpuinfo' 'echo "Informacoes de CPU 2" ; lscpu' 'echo "Informacoes de CPU 3" ; dmidecode -t processor' 'echo "Informacoes de Memoria," ; cat /proc/meminfo' 'echo "Informacoes de Memoria 1," ; dmidecode -t memory' 'echo "Informacoes de disco," ; df -h' 'echo "informacoes de particao," ; cat /proc/partitions' 'echo "Versao da distribuicao e plataforma base," ; uname -a' 'echo "Versao da distribuicao e plataforma base 1," ; cat /proc/version' 'echo "Usuarios ativos," ; w | cut -d ' ' -f 1 | grep -v USER | sort -u' 'echo "Tempo desde a ultima parada," ; uptime' 'echo "Joss e Java (path, nome das instancias)," ; ps aux | grep java' 'echo "outros processos," ; ps auxww' 'echo "ulimit informacoes," ; ulimit -a' 'echo "Versao do Perl," ; perl --version' 'echo "Versao do PHP," ; php --version' 'echo "Versao do Python," ; python --version' 'echo "Informacao de Multipath," ; multpath -l' 'echo "Discos fisicos," ; pvs' 'echo "Grupos do LVM," ; vgs' 'echo "Volumes do LVM," ; lvs' 'echo "Sistemas de arquivo," ; fdisk -l' 'echo "Hardware Fisico 1," ; dmesg' 'echo "Hardware Fisico 2," ; lshw -short' 'echo "Hardware Fisico 3," ; hwinfo --short' 'echo "Dispositivos PCI," ; lspci' 'echo "Dispositivos SCSI 1," ; lsscsi' 'echo "Dispositivos SCSI 2," ; cat /proc/scsi/scsi' 'echo "Dispositivos USB," ; lsusb' 'echo "Dispositivos de Bloco," ; lsblk' 'echo "Detalhes da BIOS," ; dmidecode -t bios' )
 
 
-#=== FUNCTION ================================================================
-# NAME: testaEspaco
-# DESCRIPTION: Testa a localizacao do /tmp e o espaco em disco
+#=== FUNCTION 1 ================================================================
+# NAME: RUN_COMMANDS
+# DESCRIPTION: Execuata comandos para verificacar informacoes do SO
 # PARAMETER 1: ---
 #===============================================================================
-function testaEspaco {
-if [ $TMPPART -eq 0 ] ; then
-        echo "diretorio /tmp e uma particao"
-        echo "espaco no /tmp e de: "$TMPDIR
-        echo $TMPDIR| grep "G"
-        if [ `echo $?` -eq "0" ] ; then
-                echo "espaco em giga"
-                if [ `echo $TMPDIR | grep [0-9]` > 4 ] ; then
-                        echo "espaco maior que 4G iniciando coleta"
-                else
-                        echo "espaco menor que 4G - ignorando coleta - verifique espaco em disco"
-                fi
-        fi
-else
-        echo "/tmp nao e particao"
-        echo "espaco no diretorio root e: "$ROOTDIR
-        echo $ROOTDIR | grep "G"
-        if [ `echo $?` -eq "0" ] ; then
-                echo "espaco em giga"
-                if [ `echo $ROOTDIR | grep [0-9]` > 4 ] ; then
-                        echo "espaco maior que 4G iniciando coleta"
-                else
-                        echo "espaco menor que 4G - ignorando coleta - verifique espaco em disc
-o"
-                fi
-        fi
-fi
+function RUN_COMMANDS () {
+	#processa os arquivos
+	for COMMAND in `echo ${COMMAND_LIST[@]}` ; do
+		#define o path de cada arquivo
+		FILE_PATH=`which $COMMAND`
+
+		#verifica se cada binario de comando esta instalado e qual o path
+		if [ -f "$FILE_PATH" ]
+		then
+			#verifica se o arquivo de log para a saida dos comandos ja existe, se nao cria ou faz o appende no arquivo ja existente
+			if [ -f "$FILE_TMP_ETC_ZIP" ]
+			then
+				$COMMAND > $FILE_TMP_COMMAND_OUT_LOG
+			else
+				$COMMAND >> $FILE_TMP_COMMAND_OUT_LOG
+			fi
+		else
+		#caso o binario não exista, loga a execao
+                echo    
+                echo "ERROR: "$COMMAND " - Este binario nao existe ou nao foi encontrado no path"
+                echo
+		fi
+	done
+}
+
+
+#=== FUNCTION 2 ================================================================
+# NAME: COPY_ETC_CONF
+# DESCRIPTION: Execuata a copia e a compactacao dos arquivos de configuracao do /etc
+# PARAMETER 1: ---
+#===============================================================================
+function COPY_ETC_CONF () {
+
+	#processa os arquivos
+	for FILE in `echo ${FILES_ETC_TO_COPY[@]}` ; do
+		#define o path de cada arquivo
+		FILE_PATH="/etc/"$FILE
+
+		#verifica se cada arquivo existe no path
+		if [ -f "$FILE_PATH" ]
+		then
+			#verifica se o arquivo zip ja existe, se nao cria ou faz o appende no arquivo ja existente
+			if [ -f "$FILE_TMP_ETC_ZIP" ]
+			then
+				zip -9 $FILE_TMP_ETC_ZIP $FILE_PATH
+			else
+				zip -9 $FILE_TMP_ETC_ZIP $FILE_PATH
+			fi
+		else
+        #caso o arquivo não exista, loga a execao
+                echo    
+                echo "ERROR: "$FILE " - Nao existe ou nao foi encontrado no path"
+                echo
+		fi
+	done
+
+	#processa as pastas
+	for FOLDER in `echo ${FOLDERS_ETC_TO_COPY[@]}` ; do
+		#define o path de cada arquivo
+		FOLDER_PATH="/etc/"$FOLDER
+
+		#verifica se cada arquivo existe no path
+		if [ -d "$FOLDER_PATH" ]
+		then
+			#verifica se o arquivo zip ja existe, se nao cria ou faz o appende no arquivo ja existente
+			if [ -f "$FILE_TMP_ETC_ZIP" ]
+			then
+				zip -9 $FILE_TMP_ETC_ZIP $FOLDER_PATH
+			else
+				zip -9 $FILE_TMP_ETC_ZIP $FOLDER_PATH
+			fi
+		else
+		#caso o arquivo não exista, loga a execao
+			echo    
+			echo "ERROR: "$FOLDER " - Nao existe ou nao foi encontrado no path"
+                echo
+		fi
+	done
+
+	#	$COMPAT $OUTPUTFILE /etc/posgres*
+	#	$COMPAT $OUTPUTFILE /etc/postgre*
+	#	$COMPAT $OUTPUTFILE /etc/aliases*
+	#	$COMPAT $OUTPUTFILE /etc/bashrc*
+	#	$COMPAT $OUTPUTFILE /etc/filesystems*
+	#	$COMPAT $OUTPUTFILE /etc/inittab*
+	#	$COMPAT $OUTPUTFILE /etc/mail*
+	#	$COMPAT $OUTPUTFILE /etc/printcap*
+	#	$COMPAT $OUTPUTFILE /etc/sendmail.cf
+	#	$COMPAT $OUTPUTFILE /etc/sysconfig*
+	#	$COMPAT $OUTPUTFILE /etc/xinetd*
+	#	$COMPAT $OUTPUTFILE /etc/inetd.conf
+	#	$COMPAT $OUTPUTFILE /etc/cluster*
+}
+
+#=== FUNCTION 3 ================================================================
+# NAME: COPY_VAR_LOG
+# DESCRIPTION: Execuata a copia e a compactacao dos arquivos de log
+# PARAMETER 1: ---
+#===============================================================================
+function COPY_VAR_LOG () {
+	#processa os arquivos
+	for FILE in `echo ${FILES_VAR_TO_COPY[@]}` ; do
+		#define o path de cada arquivo
+		FILE_PATH="/var/log/"$FILE
+
+		#verifica se cada arquivo existe no path
+		if [ -f "$FILE_PATH" ]
+		then
+			#verifica se o arquivo zip ja existe, se nao cria ou faz o appende no arquivo ja existente
+			if [ -f "$FILE_TMP_VAR_ZIP" ]
+			then
+				zip -9 $FILE_TMP_VAR_ZIP $FILE_PATH
+			else
+				zip -9 $FILE_TMP_VAR_ZIP $FILE_PATH
+			fi
+		else
+        #caso o arquivo não exista, loga a execao
+                echo    
+                echo "ERROR: "$FILE " - Nao existe ou nao foi encontrado no path"
+                echo
+		fi
+	done
+
+	#processa as pastas
+	for FOLDER in `echo ${FOLDERS_VAR_TO_COPY[@]}` ; do
+		#define o path de cada arquivo
+		FOLDER_PATH="/var/log/"$FOLDER
+
+		#verifica se cada arquivo existe no path
+		if [ -d "$FOLDER_PATH" ]
+		then
+			#verifica se o arquivo zip ja existe, se nao cria ou faz o appende no arquivo ja existente
+			if [ -f "$FILE_TMP_ETC_ZIP" ]
+			then
+				zip -9 $FILE_TMP_VAR_ZIP $FOLDER_PATH
+			else
+				zip -9 $FILE_TMP_VAR_ZIP $FOLDER_PATH
+			fi
+		else
+		#caso o arquivo não exista, loga a execao
+			echo    
+			echo "ERROR: "$FOLDER " - Nao existe ou nao foi encontrado no path"
+                echo
+		fi
+	done
 
 }
 
 
-#<<<< put all code here >>>>>>>
-#<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#=== FUNCTION 4 ================================================================
+# NAME: SEARCH_SPACE
+# DESCRIPTION: Testa a localizacao do /tmp e o espaco em disco
+# PARAMETER 1: ---
+#===============================================================================
+function SEARCH_SPACE () {
+	if [ $TMPPART -eq 0 ] ; then
+	
+		echo
+        	echo "/tmp e uma particao - 1"
+        	echo "espaco no /tmp e de: - 1  "$TMPDIR
+        	echo $TMPDIR| grep "G"
+        	echo
+        	
+        	if [ `echo $?` -eq "0" ] ; then
+			echo
+                	echo "espaco em Gb -1 "
+			echo
+                	if [ `echo $TMPDIR | grep [0-9]` > 4 ] ; then
+				echo
+                        	echo "espaco maior que 4Gb iniciando coleta - 1"
+				echo "executando comandos - 1"
+				echo
+				RUN_COMMANDS
+				echo
+				echo "fim da execucao de comandos - 1"
+				echo
+				echo "copiando configuracao - 1"
+				echo
+				COPY_ETC_CONF
+				echo
+				echo "fim da copia das configuracoes - 1"
+				echo
+				echo "copiando logs - 1"
+				echo
+				COPY_VAR_LOG
+				echo
+				echo "fim da copia dos logs - 1"
+				echo
+				exit 0
+                	else
+                        	echo "espaco menor que 4Gb - ignorando coleta - verifique espaco em disco - 1"
+				exit 1
+                	fi
+        	fi
+	else
+        	echo "/tmp nao e particao - 2"
+        	echo "espaco no diretorio root e: - 2 "$ROOTDIR
 
-#
-#mkdir /tmp/4linux
-#mkdir /tmp/4linux/files-etc
-#mkdir /tmp/4linux/files-log
-#NOMESERVIDOR=`hostname -s`
-#LOGFILE='/tmp/4linux/'$NOMESERVIDOR'-4linux-get-server.log'
-#FOLDERFILES='/tmp/4linux/files-etc'
-#FOLDERFILES1='/tmp/4linux/files-log'
+		echo hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
+		echo $ROOTDIR
+		echo
+		echo $?
+		echo hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
 
-#1 . Comandos
-#2 . Arquivos de Configuracao
-#3 . Arquivos de log
+        	echo $ROOTDIR | grep "G"
 
-echo "#######################################################################" >> $LOGFILE
-echo "###################### 1 . Comamdos ###################################" >> $LOGFILE
-echo "#######################################################################" >> $LOGFILE
+		echo FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 
-echo "###################### Nome do Servidor" >> $LOGFILE
-hostname -s >> $LOGFILE
-echo "###################### #Nome do Dominio DNS" >> $LOGFILE
-hostname -d >> $LOGFILE
-echo "###################### #FQDN" >> $LOGFILE
-hostname -f >> $LOGFILE
-echo "###################### #Endereco IP" >> $LOGFILE
-hostname -i >> $LOGFILE
-echo "###################### #Nome e IP dos servidores DNS" >> $LOGFILE
-nameserverips=$(sed -e '/^$/d' /etc/resolv.conf | awk '{if (tolower($1)=="nameserver") print $2}')
-echo $nameserverips >> $LOGFILE
-echo "###################### #Endereco IP" >> $LOGFILE
-ip -4 address show >> $LOGFILE
-echo "###################### #Processos (Portas e enderecos)" >> $LOGFILE
-netstat -nr >> $LOGFILE
-netstat -i >> $LOGFILE
-echo "###################### #Memoria usada e livre" >> $LOGFILE
-free -m >> $LOGFILE
-echo "###################### #Stataistica de memoria virtual" >> $LOGFILE
-vmstat >> $LOGFILE
-echo "###################### # Top 5 - Processos comedores de memoria" >> $LOGFILE
-ps auxf | sort -nr -k 4 | head -5 >> $LOGFILE
-echo "###################### #Versao do Bash" >> $LOGFILE
-bash --version >> $LOGFILE
-echo "###################### #Informacoes de CPU" >> $LOGFILE
-cat /proc/cpuinfo >> $LOGFILE
-echo "###################### #Informacoes de CPU 1" >> $LOGFILE
-lscpu >> $LOGFILE
-echo "###################### #Informacoes de CPU 2" >> $LOGFILE
-dmidecode -t processor >> $LOGFILE
-echo "###################### #Informacoes de Memoria" >> $LOGFILE
-cat /proc/meminfo >> $LOGFILE
-echo "###################### #Informacoes de Memoria 1" >> $LOGFILE
-dmidecode -t memory >> $LOGFILE
-echo "###################### #Informacoes de disco" >> $LOGFILE
-df -h >> $LOGFILE
-echo "###################### #informacoes de particao" >> $LOGFILE
-cat /proc/partitions >> $LOGFILE
-echo "###################### #Versao da distribuicao e plataforma base" >> $LOGFILE
-uname -a >> $LOGFILE
-echo "###################### #Versao da distribuicao e plataforma base 1" >> $LOGFILE
-cat /proc/version >> $LOGFILE
-echo "###################### #Usuarios ativos" >> $LOGFILE
-w | cut -d ' ' -f 1 | grep -v USER | sort -u >> $LOGFILE
-echo "###################### #Tempo desde a ultima parada" >> $LOGFILE
-uptime >> $LOGFILE
-echo "###################### #Joss e Java (path, nome das instancias)" >> $LOGFILE
-ps aux | grep java >> $LOGFILE
-echo "###################### #outros processos" >> $LOGFILE
-ps auxww >> $LOGFILE
-echo "###################### #ulimit informacoes" >> $LOGFILE
-ulimit -a >> $LOGFILE
-echo "###################### #Versao do Perl" >> $LOGFILE
-perl --version >> $LOGFILE
-echo "###################### #Versao do PHP" >> $LOGFILE
-php --version >> $LOGFILE
-echo "###################### #Versao do Python"  >> $LOGFILE
-python --version >> $LOGFILE
-echo "###################### #Informacao de Multipath" >> $LOGFILE
-multpath -l >> $LOGFILE
-echo "###################### #Discos fisicos***" >> $LOGFILE
-pvs >> $LOGFILE
-echo "###################### #Grupos do LVM" >> $LOGFILE
-vgs >> $LOGFILE
-echo "###################### #Volumes do LVM" >> $LOGFILE
-lvs >> $LOGFILE
-echo "###################### #Sistemas de arquivo" >> $LOGFILE
-fdisk -l >> $LOGFILE
-echo "###################### #Hardware Fisico***" >> $LOGFILE
-dmesg >> $LOGFILE
-echo "###################### #Hardware Fisico***" 2 >> $LOGFILE
-lshw -short >> $LOGFILE
-echo "###################### #Hardware Fisico***" 3 >> $LOGFILE
-hwinfo --short >> $LOGFILE
-echo "###################### #Dispositivos PCI" >> $LOGFILE
-lspci >> $LOGFILE
-echo "###################### #Dispositivos SCSI" >> $LOGFILE
-lsscsi >> $LOGFILE
-echo "###################### #Dispositivos SCSI 1" >> $LOGFILE
-cat /proc/scsi/scsi >> $LOGFILE
-echo "###################### #Dispositivos USB" >> $LOGFILE
-lsusb >> $LOGFILE
-echo "###################### #Dispositivos de Bloco" >> $LOGFILE
-lsblk >> $LOGFILE
-echo "###################### #Detalhes da BIOS" >> $LOGFILE
-dmidecode -t bios >> $LOGFILE
-
-echo "#####################################################################" >> $LOGFILE
-echo "###################### #INICIO DA COPIA DOS ARQUIVOS DE CONFIGURACAO" >> $LOGFILE
-echo "#####################################################################" >> $LOGFILE
-
-cp -R /etc/mtab* $FOLDERFILES >> $LOGFILE
-cp -R /etc/fstab* $FOLDERFILES >> $LOGFILE
-cp -R /etc/apache* $FOLDERFILES >> $LOGFILE
-cp -R /etc/skel* $FOLDERFILES >> $LOGFILE
-cp -R /etc/mysql* $FOLDERFILES >> $LOGFILE
-cp -R /etc/posgres* $FOLDERFILES >> $LOGFILE
-cp -R /etc/postgre* $FOLDERFILES >> $LOGFILE
-cp -R /etc/aliases* $FOLDERFILES >> $LOGFILE
-cp -R /etc/bashrc* $FOLDERFILES >> $LOGFILE
-cp -R /etc/crontab* $FOLDERFILES >> $LOGFILE
-cp -R /etc/cron.* $FOLDERFILES >> $LOGFILE
-cp -R /etc/default* $FOLDERFILES >> $LOGFILE
-cp -R /etc/filesystems* $FOLDERFILES >> $LOGFILE
-cp -R /etc/group* $FOLDERFILES >> $LOGFILE
-cp -R /etc/hosts* $FOLDERFILES >> $LOGFILE
-cp -R /etc/inittab* $FOLDERFILES >> $LOGFILE
-cp -R /etc/issue* $FOLDERFILES >> $LOGFILE
-cp -R /etc/logrotate* $FOLDERFILES >> $LOGFILE
-cp -R /etc/mail* $FOLDERFILES >> $LOGFILE
-cp -R /etc/modules.conf $FOLDERFILES >> $LOGFILE
-cp -R /etc/motd* $FOLDERFILES >> $LOGFILE
-cp -R /etc/nssswitch.conf $FOLDERFILES >> $LOGFILE
-cp -R /etc/pam.d* $FOLDERFILES >> $LOGFILE
-cp -R /etc/passwd* $FOLDERFILES >> $LOGFILE
-cp -R /etc/printcap* $FOLDERFILES >> $LOGFILE
-cp -R /etc/profile* $FOLDERFILES >> $LOGFILE
-cp -R /etc/rc* $FOLDERFILES >> $LOGFILE
-cp -R /etc/resolv.conf $FOLDERFILES >> $LOGFILE
-cp -R /etc/sendmail.cf $FOLDERFILES >> $LOGFILE
-cp -R /etc/services* $FOLDERFILES >> $LOGFILE
-cp -R /etc/sysconfig* $FOLDERFILES >> $LOGFILE
-cp -R /etc/xinetd* $FOLDERFILES >> $LOGFILE
-cp -R /etc/inetd.conf $FOLDERFILES >> $LOGFILE
-cp -R /etc/rsyslog.conf $FOLDERFILES >> $LOGFILE
-cp -R /etc/cluster* $FOLDERFILES >> $LOGFILE
+        	if [ `echo $?` -eq "0" ] ; then
+                	echo "espaco em giga - 2"
+                	if [ `echo $ROOTDIR | grep [0-9]` > 4 ] ; then
+				echo
+                        	echo "espaco maior que 4Gb iniciando coleta - 2"
+				echo "executando comandos 2"
+				echo
+				RUN_COMMANDS
+				echo
+				echo "fim da execucao de comandos - 2"
+				echo
+				echo "copiando configuracao - 2"
+				echo
+				COPY_ETC_CONF
+				echo
+				echo "fim da copia das configuracoes - 2"
+				echo
+				echo "copiando logs - 2"
+				echo
+				COPY_VAR_LOG
+				echo
+				echo "fim da copia dos logs - 2"
+				echo
+				exit 0
+                	else
+                        	echo "espaco menor que 4Gb - ignorando coleta - verifique espaco em disco - 2"
+				exit 1
+                	fi
+        	fi
+	fi
+}
 
 
-echo "#####################################################################" >> $LOGFILE
-echo "###################### #INICIO DA COPIA DOS ARQUIVOS DE LOG" >> $LOGFILE
-echo "#####################################################################" >> $LOGFILE
-cp -R /var/log/messages* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/dmesg* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/auth.log* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/boot.log* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/daemon.log* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/dpkg.log* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/kern.log* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/lastlog* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/maillog* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/mail.log* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/user.log* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/Xorg.x.log* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/alternatives.log* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/btmp* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/cups* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/anaconda.log* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/yum.log* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/cron* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/secure* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/wtmp* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/utmp* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/faillog* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/httpd* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/www* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/apache2* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/lighttpd* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/conman* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/mail* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/prelink* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/audit* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/setroubleshoot* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/samba* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/sa* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/sssd* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/mysql* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/postgre* $FOLDERFILES1 >> $LOGFILE
-cp -R /var/log/posgre* $FOLDERFILES1 >> $LOGFILE
+#=== FUNCTION 5 ================================================================
+# NAME: MAIN
+# DESCRIPTION: Executa todas as acoes do script
+# PARAMETER 1: ---
+#===============================================================================
+function MAIN () {
+	#----------------------------------------------------------------------
+	# verifica se o binario do zip esta instalado no sistema
+	#----------------------------------------------------------------------
+	if [ -f "$ZIP_BIN_PATH" ]
+	then
+		echo
+		echo "INFO: ZIP encontrado em "$ZIP_BIN_PATH
+		echo
+	else
+		echo
+		echo "ERROR: ZIP NAO ENCONTRADO"
+		echo "PARA UTILIZAR ESTE SCRIPT E NECESSARIO INSTALAR O PACOTE ZIP"
+		echo
+		exit 1
+	fi
+
+	#----------------------------------------------------------------------
+	# verifica se existe pelo menos 4G de espaco em disco no /tmp
+	#----------------------------------------------------------------------
 
 
-#<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	#----------------------------------------------------------------------
+	# cria pasta para armazenar arquivos
+	#----------------------------------------------------------------------
+	mkdir -p $TMP_ETC_FOLDER_TO_FILES
 
-#----------------------------------------------------------------------
-# Calcula e loga o tempo total de execucao do script
-#----------------------------------------------------------------------
-ENDSCRIPT=`date +%s.%N`
-dt=$(echo "$ENDSCRIPT-$STARTSCRIPT" | bc)
-dd=$(echo "$dt/86400" | bc)
-dt2=$(echo "$dt-86400*$dd" | bc)
-dh=$(echo "$dt2/3600" | bc)
-dt3=$(echo "$dt2-3600*$dh" | bc)
-dm=$(echo "$dt3/60" | bc)
-ds=$(echo "$dt3-60*$dm" | bc)
+	##>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> OLD
+	#OUTPUTLOG="/tmp/getfiles-"`hostname`".log 2>&1"
+	touch /tmp/getfiles-`hostname`.log
+	#OUTPUTLOG=(` 2>&1 | tee -a `"/tmp/getfiles-"`hostname`".log")
+	OUTPUTLOG='2>&1 | tee -a /tmp/getfiles-'`hostname`'.log'
 
-printf "Total runtime: %d:%02d:%02d:%02.4f\n" $dd $dh $dm $ds  >> $OUTPUTLOG
+	df -h | grep /tmp
+	TMPPART=$?
+	ROOTDIR=`df -h / | grep "/" | awk '{print $4}'`
+	TMPDIR=`df -h / | grep "/tmp" | awk '{print $4}'`
+	COMPAT=`/usr/bin/tar -cvjf`
+	##>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-echo $STARTSCRIPT >> $OUTPUTLOG
+	#----------------------------------------------------------------------
+	# chama a primeira funcao
+	#----------------------------------------------------------------------
+	SEARCH_SPACE
+
+	#----------------------------------------------------------------------
+	# Calcula e loga o tempo total de execucao do script
+	#----------------------------------------------------------------------
+	ENDSCRIPT=`date +%s.%N`
+	dt=$(echo "$ENDSCRIPT-$STARTSCRIPT" | bc)
+	dd=$(echo "$dt/86400" | bc)
+	dt2=$(echo "$dt-86400*$dd" | bc)
+	dh=$(echo "$dt2/3600" | bc)
+	dt3=$(echo "$dt2-3600*$dh" | bc)
+	dm=$(echo "$dt3/60" | bc)
+	ds=$(echo "$dt3-60*$dm" | bc)
+
+	echo "Total runtime: %d:%02d:%02d:%02.4f\n" $dd $dh $dm $ds 
+
+	echo $STARTSCRIPT
+}
+
+MAIN
