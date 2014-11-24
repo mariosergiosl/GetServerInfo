@@ -81,7 +81,8 @@ APP_COMMAND_LIST_DICT=('echo "PHP Info, " ; php -r phpinfo \(\)\;' 'echo "Java v
 function RUN_COMMANDS () {
 	#processa os arquivos
 	#for COMMAND in `echo ${COMMAND_LIST[@]}` ; do
-	for (( i = 0; i < ${COMMAND_LIST[@]}; i++ )) ; do
+	# intao a "#" na frente do nome da array e importante
+	for (( i = 0; i < ${#COMMAND_LIST[@]}; i++ )) ; do
 		#define o path de cada arquivo
 		#FILE_PATH=`which $COMMAND`
 		FILE_PATH=`echo "${COMMAND_LIST[$i]}" | cut -d " " -f 1 | xargs which`
