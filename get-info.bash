@@ -84,7 +84,7 @@ function RUN_COMMANDS () {
 	for (( i = 0; i < ${COMMAND_LIST[@]}; i++ )) ; do
 		#define o path de cada arquivo
 		#FILE_PATH=`which $COMMAND`
-		FILE_PATH=`echo ${COMMAND_LIST[$i]} | cut -d " " -f 1 | xargs which`
+		FILE_PATH=`echo "${COMMAND_LIST[$i]}" | cut -d " " -f 1 | xargs which`
 
 		#verifica se cada binario de comando esta instalado e qual o path
 		if [ -f "$FILE_PATH" ]
@@ -351,7 +351,7 @@ function MAIN () {
 	#----------------------------------------------------------------------
 	# cria pasta para armazenar arquivos
 	#----------------------------------------------------------------------
-	mkdir -p $TMP_ETC_FOLDER_TO_FILES
+	mkdir -p $TMP_FOLDER_TO_FILES
 
 	##>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> OLD
 	#OUTPUTLOG="/tmp/getfiles-"`hostname`".log 2>&1"
@@ -363,7 +363,7 @@ function MAIN () {
 	TMPPART=$?
 	ROOTDIR=`df -h / | grep "/" | awk '{print $4}'`
 	TMPDIR=`df -h / | grep "/tmp" | awk '{print $4}'`
-	COMPAT=`/usr/bin/tar -cvjf`
+	############COMPAT=`/usr/bin/tar -cvjf`
 	##>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 	#----------------------------------------------------------------------
