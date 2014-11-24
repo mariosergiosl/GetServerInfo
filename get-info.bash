@@ -30,9 +30,12 @@
 STARTSCRIPT=`date +%s.%N`
 TMP_FOLDER_TO_FILES="/tmp/GETFILES"
 ZIP_BIN_PATH=`which zip`
+TAR_BIN_PATH=`which tar`
 FILE_TMP_ETC_ZIP=$TMP_FOLDER_TO_FILES"/FILE_ETC.zip"
 FILE_TMP_VAR_ZIP=$TMP_FOLDER_TO_FILES"/FILE_VAR.zip"
 FILE_TMP_COMMAND_OUT_LOG=$TMP_FOLDER_TO_FILES"/COMMAND_OUT_LOG.log"
+FILE_TMP_APP_COMMAND_OUT_LOG=$TMP_FOLDER_TO_FILES"/APP_COMMAND_OUT_LOG.log"
+FILE_TMP_SEC_CVE_COMMAND_OUT_LOG=$TMP_FOLDER_TO_FILES"/SEC_CVE_COMMAND_OUT_LOG.log"
 
 #----------------------------------------------------------------------
 # pastas do /etc para copia
@@ -64,11 +67,11 @@ COMMAND_LIST_DICT=('echo "Nome do Servidor, " ; hostname -s' 'echo "Nome do Domi
 #----------------------------------------------------------------------
 # comandos a serem executados para captura de informacoes de aplicacoes
 #----------------------------------------------------------------------
-APP_COMMAND_LIST=( 'php -r phpinfo \(\)\;' 
+APP_COMMAND_LIST=( 'php -r phpinfo \(\)\;' 'java -version' 'java -version | head -n 1 | cut -d "\"" -f 2' 'which java' 'which javac' 'env | grep -i java' 'pgrep -f jboss' 'env | grep -i jboss' 'echo $JBOSS_HOME' 'echo $JBOSS_CONSOLE' 'netstat -tulpn | grep `ps -ef | grep org.jboss.Main | awk \'{print $2}' `' 'tree -L 1 -d $JBOSS_HOME/server' 'ls -lh $JBOSS_HOME/server' )
 #----------------------------------------------------------------------
-# dicionario da lista de comandos
+# dicionario da lista de comandos para captura de informacoes de aplicacoes
 #----------------------------------------------------------------------
-COMMAND_LIST_DICT=('echo "PHP Info, " ; php -r phpinfo \(\)\;' 'echo "Java version Full, " ; java -version' 'echo "Java version, " ; java -version | head -n 1 | awk -F '"' '{print $2}''
+APP_COMMAND_LIST_DICT=('echo "PHP Info, " ; php -r phpinfo \(\)\;' 'echo "Java version Full, " ; java -version' 'echo "Java version, " ; java -version | head -n 1 | cut -d "\"" -f 2' 'echo "java path, " ; which java' 'echo "javac path, " ; which javac' 'echo "env java, " ; env | grep -i java' 'echo "Jboss Process, " ; pgrep -f jboss' 'echo "Jboss ENV, " ; env | grep -i jboss' 'echo "Jboss Home, " $JBOSS_HOME' 'echo "Jboss Console, " $JBOSS_CONSOLE' 'echo "Jboss Ports, " ; netstat -tulpn | grep `ps -ef | grep org.jboss.Main | awk '{print $2}'`' 'echo "Jboss tree home, " ; tree -L 1 -d $JBOSS_HOME/server' 'echo "Jboss home, " ; ls -lh $JBOSS_HOME/server' )
 
 #=== FUNCTION 1 ================================================================
 # NAME: RUN_COMMANDS
@@ -77,9 +80,11 @@ COMMAND_LIST_DICT=('echo "PHP Info, " ; php -r phpinfo \(\)\;' 'echo "Java versi
 #===============================================================================
 function RUN_COMMANDS () {
 	#processa os arquivos
-	for COMMAND in `echo ${COMMAND_LIST[@]}` ; do
+	#for COMMAND in `echo ${COMMAND_LIST[@]}` ; do
+	for (( i = 0; i < ${COMMAND_LIST[@]}; i++ )) ; do
 		#define o path de cada arquivo
-		FILE_PATH=`which $COMMAND`
+		#FILE_PATH=`which $COMMAND`
+		FILE_PATH=`echo ${COMMAND_LIST[$i]} | cut -d " " -f 1 | xargs which`
 
 		#verifica se cada binario de comando esta instalado e qual o path
 		if [ -f "$FILE_PATH" ]
