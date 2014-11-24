@@ -16,9 +16,11 @@
 #
 # AUTHOR: Mario Luz, mluz@suse.com
 # COMPANY: Suse
-# VERSION: Drafth 0.3
+# VERSION: Drafth 0.4
 # CREATED: 25.09.2014 - 01:12:50
 # REVISION: 01-25.09.2014
+# REVISION: 02-24.11.2014 Adicionar captura de informacao de aplicacoes 
+#			  PHP, JAVA, JBOSS, POSTGRESS, APACHE
 #===================================================================================
 
 
@@ -59,7 +61,14 @@ COMMAND_LIST=( 'hostname -s' 'hostname -d' 'hostname -f' 'hostname -i' 'ip -4 ad
 # dicionario da lista de comandos
 #----------------------------------------------------------------------
 COMMAND_LIST_DICT=('echo "Nome do Servidor, " ; hostname -s' 'echo "Nome do Dominio DNS, " ; hostname -d' 'echo "FQDN," ; hostname -f' 'echo "Endereco IP" ; hostname -i' 'echo "Nome e IP dos servidores DNS," ; nameserverips=$(sed -e '/^$/d' /etc/resolv.conf | awk '{if (tolower($1)=="nameserver") print $2}') ; echo $nameserverips' 'echo "Endereco IP," ; ip -4 address show' 'echo "Processos 1 (Portas e enderecos)," ; netstat -nr' 'echo "Processos 2 (Portas e enderecos)," ; netstat -i' 'echo "Memoria usada e livre," ; free -m' 'echo "Stataistica de memoria virtual," ; vmstat' 'echo "Top 5 - Processos que utilizam memoria," ; ps auxf | sort -nr -k 4 | head -5' 'echo "Versao do Bash," ; bash --version' 'echo "Informacoes de CPU 1," ; cat /proc/cpuinfo' 'echo "Informacoes de CPU 2" ; lscpu' 'echo "Informacoes de CPU 3" ; dmidecode -t processor' 'echo "Informacoes de Memoria," ; cat /proc/meminfo' 'echo "Informacoes de Memoria 1," ; dmidecode -t memory' 'echo "Informacoes de disco," ; df -h' 'echo "informacoes de particao," ; cat /proc/partitions' 'echo "Versao da distribuicao e plataforma base," ; uname -a' 'echo "Versao da distribuicao e plataforma base 1," ; cat /proc/version' 'echo "Usuarios ativos," ; w | cut -d ' ' -f 1 | grep -v USER | sort -u' 'echo "Tempo desde a ultima parada," ; uptime' 'echo "Joss e Java (path, nome das instancias)," ; ps aux | grep java' 'echo "outros processos," ; ps auxww' 'echo "ulimit informacoes," ; ulimit -a' 'echo "Versao do Perl," ; perl --version' 'echo "Versao do PHP," ; php --version' 'echo "Versao do Python," ; python --version' 'echo "Informacao de Multipath," ; multpath -l' 'echo "Discos fisicos," ; pvs' 'echo "Grupos do LVM," ; vgs' 'echo "Volumes do LVM," ; lvs' 'echo "Sistemas de arquivo," ; fdisk -l' 'echo "Hardware Fisico 1," ; dmesg' 'echo "Hardware Fisico 2," ; lshw -short' 'echo "Hardware Fisico 3," ; hwinfo --short' 'echo "Dispositivos PCI," ; lspci' 'echo "Dispositivos SCSI 1," ; lsscsi' 'echo "Dispositivos SCSI 2," ; cat /proc/scsi/scsi' 'echo "Dispositivos USB," ; lsusb' 'echo "Dispositivos de Bloco," ; lsblk' 'echo "Detalhes da BIOS," ; dmidecode -t bios' )
-
+#----------------------------------------------------------------------
+# comandos a serem executados para captura de informacoes de aplicacoes
+#----------------------------------------------------------------------
+APP_COMMAND_LIST=( 'php -r phpinfo \(\)\;' 
+#----------------------------------------------------------------------
+# dicionario da lista de comandos
+#----------------------------------------------------------------------
+COMMAND_LIST_DICT=('echo "PHP Info, " ; php -r phpinfo \(\)\;' 'echo "Java version Full, " ; java -version' 'echo "Java version, " ; java -version | head -n 1 | awk -F '"' '{print $2}''
 
 #=== FUNCTION 1 ================================================================
 # NAME: RUN_COMMANDS
