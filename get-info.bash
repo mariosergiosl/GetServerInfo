@@ -56,7 +56,7 @@ FILES_VAR_TO_COPY=()
 #----------------------------------------------------------------------
 # comandos a serem executados
 #----------------------------------------------------------------------
-COMMAND_LIST=( 'hostname -s' 'hostname -d' 'hostname -f' 'hostname -i' 'ip -4 address show' 'netstat -nr' 'netstat -i' 'free -m' 'vmstat' 'ps auxf | sort -nr -k 4 | head -5' 'bash --version' 'cat /proc/cpuinfo' 'lscpu' 'dmidecode -t processor' 'cat /proc/meminfo' 'dmidecode -t memory' 'df -h' 'cat /proc/partitions' 'uname -a' 'cat /proc/version' 'uptime' 'ps aux | grep java' 'ps auxww' 'ulimit -a' 'perl --version' 'php --version' 'python --version' 'multpath -l' 'pvs' 'pvdisplay' 'vgs' 'vgdisplay' 'lvs' 'lvdisplay' 'fdisk -l' 'dmesg' 'lshw -short' 'hwinfo --short' 'lspci' 'lsscsi' 'cat /proc/scsi/scsi' 'lsusb' 'lsblk' 'dmidecode -t bios' )
+COMMAND_LIST=( 'hostname -s' 'hostname -d' 'hostname -f' 'hostname -i' 'ip -4 address show' 'netstat -nr' 'netstat -i' 'free -m' 'vmstat' 'ps auxf | sort -nr -k 4 | head -5' 'bash --version' 'cat /proc/cpuinfo' 'lscpu' 'dmidecode -t processor' 'cat /proc/meminfo' 'dmidecode -t memory' 'df -h' 'cat /proc/partitions' 'uname -a' 'cat /proc/version' 'uptime' 'ps aux | grep java' 'ps auxww' 'ulimit -a' 'perl --version' 'php --version' 'python --version' 'multipath -l' 'pvs' 'pvdisplay' 'vgs' 'vgdisplay' 'lvs' 'lvdisplay' 'fdisk -l' 'dmesg' 'lshw -short' 'hwinfo --short' 'lspci' 'lsscsi' 'cat /proc/scsi/scsi' 'lsusb' 'lsblk' 'dmidecode -t bios' )
 # rever sintaxe dos comandos
 # 'nameserverips=$(sed -e '/^$/d' /etc/resolv.conf | awk '{if (tolower($1)=="nameserver") print $2}') ; echo $nameserverips'
 #'echo "Usuarios ativos," ; w | cut -d ' ' -f 1 | grep -v USER | sort -u'
