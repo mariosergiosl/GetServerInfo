@@ -124,8 +124,42 @@ function RUN_COMMANDS () {
 	done
 }
 
-
 #=== FUNCTION 2 ================================================================
+# NAME: RUN_COMMANDS
+# DESCRIPTION: Execuata comandos para verificacar informacoes do SO
+# PARAMETER 1: ---
+#===============================================================================
+function RUN_APP_COMMANDS () {
+	#processa os arquivos
+	#for COMMAND in `echo ${COMMAND_LIST[@]}` ; do
+	# intao a "#" na frente do nome da array e importante
+	for (( i = 0; i < ${#APP_COMMAND_LIST[@]}; i++ )) ; do
+		#define o path de cada arquivo
+		#FILE_PATH=`which $COMMAND`
+		FILE_PATH=`echo "${APP_COMMAND_LIST[$i]}" | cut -d " " -f 1 | xargs which`
+		COMMAND=`echo "${APP_COMMAND_LIST[$i]}"`
+
+		#verifica se cada binario de comando esta instalado e qual o path
+		if [ -f "$FILE_PATH" ]
+		then
+			#verifica se o arquivo de log para a saida dos comandos ja existe, se nao cria ou faz o appende no arquivo ja existente
+			if [ -f "$FILE_TMP_ETC_ZIP" ]
+			then
+				$COMMAND >> $FILE_TMP_COMMAND_OUT_LOG
+			else
+				$COMMAND >> $FILE_TMP_COMMAND_OUT_LOG
+			fi
+		else
+		#caso o binario não exista, loga a execao
+                echo "#===============================================================================" >> $FILE_TMP_ERROR_OUT_LOG
+                echo "ERROR: "`$COMMAND` " - Este binario nao existe ou nao foi encontrado no path" >> $FILE_TMP_ERROR_OUT_LOG
+                echo "#===============================================================================" >> $FILE_TMP_ERROR_OUT_LOG
+		fi
+	done
+}
+
+
+#=== FUNCTION 3 ================================================================
 # NAME: COPY_ETC_CONF
 # DESCRIPTION: Execuata a copia e a compactacao dos arquivos de configuracao do /etc
 # PARAMETER 1: ---
@@ -190,9 +224,11 @@ function COPY_ETC_CONF () {
 #===============================================================================
 function COPY_VAR_LOG () {
 	#processa os arquivos
-	for FILE in `echo ${FILES_VAR_TO_COPY[@]}` ; do
+	#for FILE in `echo ${FILES_VAR_TO_COPY[@]}` ; do
+	for (( i = 0; i < ${#FILES_VAR_TO_COPY[@]}; i++ )) ; do
 		#define o path de cada arquivo
-		FILE_PATH="/var/log/"$FILE
+		#FILE_PATH="/var/log/"$FILE
+		FILE_PATH="/var/log/"`echo "${FILES_VAR_TO_COPY[$i]}"`
 
 		#verifica se cada arquivo existe no path
 		if [ -f "$FILE_PATH" ]
@@ -213,9 +249,11 @@ function COPY_VAR_LOG () {
 	done
 
 	#processa as pastas
-	for FOLDER in `echo ${FOLDERS_VAR_TO_COPY[@]}` ; do
+	#for FOLDER in `echo ${FOLDERS_VAR_TO_COPY[@]}` ; do
+	for (( i = 0; i < ${#FOLDERS_VAR_TO_COPY[@]}; i++ )) ; do
 		#define o path de cada arquivo
-		FOLDER_PATH="/var/log/"$FOLDER
+		#FOLDER_PATH="/var/log/"$FOLDER
+		FOLDER_PATH="/var/log/"`echo "${FOLDERS_VAR_TO_COPY[$i]}"`
 
 		#verifica se cada arquivo existe no path
 		if [ -d "$FOLDER_PATH" ]
@@ -265,6 +303,12 @@ function SEARCH_SPACE () {
 				echo
 				echo "fim da execucao de comandos - 1"  >> $FILE_TMP_COMMAND_OUT_LOG
 				echo
+				echo "executando comandos de aplicacoes- 1"  >> $FILE_TMP_COMMAND_OUT_LOG
+				echo
+				RUN_APP_COMMANDS
+				echo
+				echo "fim da execucao de comandos de aplicacoes - 1"  >> $FILE_TMP_COMMAND_OUT_LOG
+				echo
 				echo "copiando configuracao - 1"  >> $FILE_TMP_COMMAND_OUT_LOG
 				echo
 				COPY_ETC_CONF
@@ -309,6 +353,12 @@ function SEARCH_SPACE () {
 				RUN_COMMANDS
 				echo
 				echo "fim da execucao de comandos - 2"  >> $FILE_TMP_COMMAND_OUT_LOG
+				echo
+				echo "executando comandos de aplicacoes -2"  >> $FILE_TMP_COMMAND_OUT_LOG
+				echo
+				RUN_APP_COMMANDS
+				echo
+				echo "fim da execucao de comandos de aplicacoes - 2"  >> $FILE_TMP_COMMAND_OUT_LOG
 				echo
 				echo "copiando configuracao - 2"  >> $FILE_TMP_COMMAND_OUT_LOG
 				echo
