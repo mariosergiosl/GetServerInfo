@@ -32,6 +32,8 @@
 #	/etc/xinetd*
 #	/etc/inetd.conf
 #	/etc/cluster*
+#	security and CVE test
+#	tuning and performance test
 # REVISION: 01-25.09.2014
 # REVISION: 02-24.11.2014 Adicionar captura de informacao de aplicacoes 
 #			  PHP, JAVA, JBOSS, POSTGRESS, APACHE
@@ -65,7 +67,7 @@ FILES_ETC_TO_COPY=( 'rsyslog.conf' 'sysctl.conf' 'rc.local' 'profile' 'modules' 
 #----------------------------------------------------------------------
 # pastas do /var/log para copia
 #----------------------------------------------------------------------
-FOLDERS_VAR_TO_COPY=( 'messages*' 'dmesg*' 'boot.log*' 'auth.log*' 'daemon.log*' 'dpkg.log*' 'kern.log*' 'lastlog*' 'maillog*' 'mail.log*' 'user.log*' 'Xorg.x.log*' 'alternatives.log*' 'btmp*' 'cups*' 'anaconda.log*' 'yum.log*' 'cron*' 'secure*' 'wtmp*' 'utmp*' 'faillog*' 'httpd*' 'www*' 'apache2*' 'lighttpd*' 'conman*' 'mail*' 'prelink*' 'audit*' 'setroubleshoot*' 'samba*' 'sa*' 'sssd*' 'mysql*' 'postgre*' 'posgre*' )
+FOLDERS_VAR_TO_COPY=( 'journal' 'messages' 'dmesg' 'boot.log' 'auth.log' 'daemon.log' 'dpkg.log' 'kern.log' 'lastlog' 'maillog' 'mail.log' 'user.log' 'Xorg.x.log' 'alternatives.log' 'btmp' 'cups' 'anaconda.log' 'yum.log' 'cron' 'secure' 'wtmp' 'utmp' 'faillog' 'httpd' 'www' 'apache2' 'lighttpd' 'conman' 'mail' 'prelink' 'audit' 'setroubleshoot' 'samba' 'sa' 'sssd' 'mysql' 'postgre' 'posgre' )
 #----------------------------------------------------------------------
 # arquivos do /var/log para copia
 #----------------------------------------------------------------------
@@ -84,7 +86,7 @@ COMMAND_LIST=( 'hostname -s' 'hostname -d' 'hostname -f' 'hostname -i' 'ip -4 ad
 #----------------------------------------------------------------------
 # comandos a serem executados para captura de informacoes de aplicacoes
 #----------------------------------------------------------------------
-APP_COMMAND_LIST=( 'php -r phpinfo \(\)\;' 'java -version' 'java -version | head -n 1 | cut -d "\"" -f 2' 'which java' 'which javac' 'env | grep -i java' 'pgrep -f jboss' 'env | grep -i jboss' 'echo $JBOSS_HOME' 'echo $JBOSS_CONSOLE' 'netstat -tulpn | grep `pgrep org.jboss.Main`' 'tree -L 1 -d $JBOSS_HOME/server' 'ls -lh $JBOSS_HOME/server' )
+APP_COMMAND_LIST=( 'php -r phpinfo \(\)\;' 'java -version 2>>' 'which java' 'which javac' 'env | grep -i java' 'pgrep -f jboss' 'env | grep -i jboss' 'echo $JBOSS_HOME' 'echo $JBOSS_CONSOLE' 'netstat -tulpn | grep `pgrep org.jboss.Main`' 'tree -L 1 -d $JBOSS_HOME/server' 'ls -lh $JBOSS_HOME/server' )
 #----------------------------------------------------------------------
 # dicionario da lista de comandos para captura de informacoes de aplicacoes
 #----------------------------------------------------------------------
@@ -110,10 +112,10 @@ function RUN_COMMANDS () {
 			if [ -f "$FILE_TMP_COMMAND_OUT_LOG" ]
 			then
                 		echo "#===============================================================================" >> $FILE_TMP_COMMAND_OUT_LOG
-				$COMMAND 2>&1 >> $FILE_TMP_COMMAND_OUT_LOG
+				$COMMAND 2>&1 2>> $FILE_TMP_COMMAND_OUT_LOG
 			else
                 		echo "#===============================================================================" >> $FILE_TMP_COMMAND_OUT_LOG
-				$COMMAND 2>&1 >> $FILE_TMP_COMMAND_OUT_LOG
+				$COMMAND 2>&1 2>> $FILE_TMP_COMMAND_OUT_LOG
 			fi
 		else
 		#caso o binario não exista, loga a execao
@@ -142,10 +144,10 @@ function RUN_APP_COMMANDS () {
 			if [ -f "$FILE_TMP_COMMAND_OUT_LOG" ]
 			then
                 		echo "#===============================================================================" >> $FILE_TMP_COMMAND_OUT_LOG
-				$COMMAND 2>&1 >> $FILE_TMP_COMMAND_OUT_LOG
+				$COMMAND 2>&1 2>> $FILE_TMP_COMMAND_OUT_LOG
 			else
                 		echo "#===============================================================================" >> $FILE_TMP_COMMAND_OUT_LOG
-				$COMMAND 2>&1 >> $FILE_TMP_COMMAND_OUT_LOG
+				$COMMAND 2>&1 2>> $FILE_TMP_COMMAND_OUT_LOG
 			fi
 		else
 		#caso o binario não exista, loga a execao
@@ -163,10 +165,8 @@ function RUN_APP_COMMANDS () {
 function COPY_ETC_CONF () {
 
 	#processa os arquivos
-	#for FILE in `echo ${FILES_ETC_TO_COPY[@]}` ; do
 	for (( i = 0; i < ${#FILES_ETC_TO_COPY[@]}; i++ )) ; do
 		#define o path de cada arquivo
-		#FILE_PATH="/etc/"$FILE
 		FILE_PATH="/etc/"`echo "${FILES_ETC_TO_COPY[$i]}"`
 
 		#verifica se cada arquivo existe no path
@@ -186,10 +186,8 @@ function COPY_ETC_CONF () {
 	done
 
 	#processa as pastas
-	#for FOLDER in `echo ${FOLDERS_ETC_TO_COPY[@]}` ; do
 	for (( i = 0; i < ${#FOLDERS_ETC_TO_COPY[@]}; i++ )) ; do
 		#define o path de cada arquivo
-		#FOLDER_PATH="/etc/"$FOLDER
 		FOLDER_PATH="/etc/"`echo "${FOLDERS_ETC_TO_COPY[$i]}"`
 
 		#verifica se cada arquivo existe no path
@@ -198,9 +196,9 @@ function COPY_ETC_CONF () {
 			#verifica se o arquivo zip ja existe, se nao cria ou faz o appende no arquivo ja existente
 			if [ -f "$FILE_TMP_ETC_ZIP" ]
 			then
-				zip -9 $FILE_TMP_ETC_ZIP $FOLDER_PATH 2>&1 >> $FILE_TMP_COMMAND_OUT_LOG
+				zip -r -9 $FILE_TMP_ETC_ZIP $FOLDER_PATH 2>&1 >> $FILE_TMP_COMMAND_OUT_LOG
 			else
-				zip -9 $FILE_TMP_ETC_ZIP $FOLDER_PATH 2>&1 >> $FILE_TMP_COMMAND_OUT_LOG
+				zip -r -9 $FILE_TMP_ETC_ZIP $FOLDER_PATH 2>&1 >> $FILE_TMP_COMMAND_OUT_LOG
 			fi
 		else
 		#caso o arquivo não exista, loga a execao
@@ -216,10 +214,8 @@ function COPY_ETC_CONF () {
 #===============================================================================
 function COPY_VAR_LOG () {
 	#processa os arquivos
-	#for FILE in `echo ${FILES_VAR_TO_COPY[@]}` ; do
 	for (( i = 0; i < ${#FILES_VAR_TO_COPY[@]}; i++ )) ; do
 		#define o path de cada arquivo
-		#FILE_PATH="/var/log/"$FILE
 		FILE_PATH="/var/log/"`echo "${FILES_VAR_TO_COPY[$i]}"`
 
 		#verifica se cada arquivo existe no path
@@ -239,21 +235,19 @@ function COPY_VAR_LOG () {
 	done
 
 	#processa as pastas
-	#for FOLDER in `echo ${FOLDERS_VAR_TO_COPY[@]}` ; do
 	for (( i = 0; i < ${#FOLDERS_VAR_TO_COPY[@]}; i++ )) ; do
 		#define o path de cada arquivo
-		#FOLDER_PATH="/var/log/"$FOLDER
 		FOLDER_PATH="/var/log/"`echo "${FOLDERS_VAR_TO_COPY[$i]}"`
 
 		#verifica se cada arquivo existe no path
 		if [ -d "$FOLDER_PATH" ]
 		then
 			#verifica se o arquivo zip ja existe, se nao cria ou faz o appende no arquivo ja existente
-			if [ -f "$FILE_TMP_ETC_ZIP" ]
+			if [ -f "$FILE_TMP_VAR_ZIP" ]
 			then
-				zip -9 $FILE_TMP_VAR_ZIP $FOLDER_PATH 2>&1 >> $FILE_TMP_COMMAND_OUT_LOG
+				zip -r -9 $FILE_TMP_VAR_ZIP $FOLDER_PATH 2>&1 >> $FILE_TMP_COMMAND_OUT_LOG
 			else
-				zip -9 $FILE_TMP_VAR_ZIP $FOLDER_PATH 2>&1 >> $FILE_TMP_COMMAND_OUT_LOG
+				zip -r -9 $FILE_TMP_VAR_ZIP $FOLDER_PATH 2>&1 >> $FILE_TMP_COMMAND_OUT_LOG
 			fi
 		else
 		#caso o arquivo não exista, loga a execao
@@ -399,7 +393,7 @@ function ENDSCRIPT () {
 	echo "#===============================================================================" >> $FILE_TMP_COMMAND_OUT_LOG
 	
 	OUTPUTLOG="/tmp/get-info-"`hostname`".zip"
-	zip -9 $OUTPUTLOG $TMP_FOLDER_TO_FILES
+	zip -r -9 $OUTPUTLOG $TMP_FOLDER_TO_FILES
 	rm -rf $TMP_FOLDER_TO_FILES
 
 	exit $1
