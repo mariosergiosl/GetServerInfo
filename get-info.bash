@@ -59,11 +59,11 @@ FILE_TMP_SEC_CVE_COMMAND_OUT_LOG=$TMP_FOLDER_TO_FILES"/SEC_CVE_COMMAND_OUT_LOG.l
 #----------------------------------------------------------------------
 # pastas do /etc para copia
 #----------------------------------------------------------------------
-FOLDERS_ETC_TO_COPY=( 'init.d' 'rsyslog.d' 'sysctl.d' 'rcS.d' 'rc[0-6].d' 'profile.d' 'modprobe.d' 'pam.d' 'apache' 'grub.d' 'logrotate.d' 'init' 'init.d' 'www' 'skel' 'mysql' 'postfix' 'cron.d' 'cron.daily' 'cron.hourly' 'cron.monthly' 'cron.weekly' 'default' )
+FOLDERS_ETC_TO_COPY=( 'init.d' 'rsyslog.d' 'sysctl.d' 'rcS.d' 'rc[0-6].d' 'profile.d' 'modprobe.d' 'pam.d' 'apache' 'grub.d' 'logrotate.d' 'init' 'init.d' 'www' 'skel' 'mysql' 'postfix' 'cron.d' 'cron.daily' 'cron.hourly' 'cron.monthly' 'cron.weekly' 'default' 'iscsi' 'apache2' 'aliases.d' 'java' 'php5' 'openvpn' 'sysconfig' 'permissions.d' 'systemd' 'pam.d' 'snmp' 'security' 'modprobe.d' 'phpMyAdmin' 'ssh' 'samba' 'init.d' 'selinux' 'xinetd.d' 'sudoers.d' 'udev' 'postfix' 'sysctl.d' 'openldap')
 #----------------------------------------------------------------------
 # arquivos do /etc para copia
 #----------------------------------------------------------------------
-FILES_ETC_TO_COPY=( 'rsyslog.conf' 'sysctl.conf' 'rc.local' 'profile' 'modules' 'motd' 'passwd' 'pam.conf' 'nsswitch.conf' 'group' 'services' 'hosts' 'hosts.allow' 'hosts.deny' 'resolv.conf' 'bashrc' 'mtab' 'fstab' 'crontab' 'bash.bashrc' 'issue' 'issue.net' 'aliases' )
+FILES_ETC_TO_COPY=( 'rsyslog.conf' 'sysctl.conf' 'rc.local' 'profile' 'modules' 'motd' 'passwd' 'pam.conf' 'nsswitch.conf' 'group' 'services' 'hosts' 'hosts.allow' 'hosts.deny' 'resolv.conf' 'bashrc' 'mtab' 'fstab' 'crontab' 'bash.bashrc' 'issue' 'issue.net' 'aliases' 'dhclient.conf' 'environment' 'exports' 'filesystems' 'my.cnf' 'mysqlaccess.conf' 'nsswitch.conf')
 #----------------------------------------------------------------------
 # pastas do /var/log para copia
 #----------------------------------------------------------------------
@@ -86,7 +86,7 @@ COMMAND_LIST=( 'hostname -s' 'hostname -d' 'hostname -f' 'hostname -i' 'ip -4 ad
 #----------------------------------------------------------------------
 # comandos a serem executados para captura de informacoes de aplicacoes
 #----------------------------------------------------------------------
-APP_COMMAND_LIST=( 'php -r phpinfo \(\)\;' 'java -version 2>>' 'which java' 'which javac' 'env | grep -i java' 'pgrep -f jboss' 'env | grep -i jboss' 'echo $JBOSS_HOME' 'echo $JBOSS_CONSOLE' 'netstat -tulpn | grep `pgrep org.jboss.Main`' 'tree -L 1 -d $JBOSS_HOME/server' 'ls -lh $JBOSS_HOME/server' )
+APP_COMMAND_LIST=( 'rpm -qa | grep apache' 'rpm -qa | grep php' 'rpm -qa | grep postgre' 'php -r phpinfo \(\)\;' 'rpm -qa | grep java' 'java -version 2>>' 'which java' 'which javac' 'env | grep -i java' 'pgrep -f jboss' 'env | grep -i jboss' 'echo $JBOSS_HOME' 'echo $JBOSS_CONSOLE' 'netstat -tulpn | grep `pgrep org.jboss.Main`' 'tree -L 1 -d $JBOSS_HOME/server' 'ls -lh $JBOSS_HOME/server' 'ps aux | grep jboss' 'ps aux | grep postgres' 'tar -cvzf /tmp/GETFILES/pg_conf.tar.gz /var/lib/pgsql/data/post*.conf' 'du -h /var/lib/pgsql/' 'rpm -qa | grep mysql' 'rpm -qa | grep maria' 'ps aux | grep mysql' 'du -h /var/lib/mysql/' 'du -h /srv/' 'du -h /opt/' 'du -h /var/' 'php -i' 'php -v' 'php -m' 'apache2ctl -v' 'apache2ctl -V' 'apache2ctl -l' 'apache2ctl -S' 'apache2ctl -M' 'apache2ctl -t' 'netstat -platun') 
 #----------------------------------------------------------------------
 # dicionario da lista de comandos para captura de informacoes de aplicacoes
 #----------------------------------------------------------------------
