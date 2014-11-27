@@ -15,8 +15,9 @@
 #	 No caso de sistemas Suse pode ser utilizado o pacote supportconfig
 #
 # AUTHOR: Mario Luz, mluz at suse.com, mario.mssl at gmail.com
+#	  https://github.com/mariosergiosl/GetServerInfo/blob/master/get-info.bash
 # COMPANY: Suse
-# VERSION: Drafth 0.4
+# VERSION: Drafth 0.9
 # CREATED: 25.09.2014 - 01:12:50
 # ROADMAP:
 #	/etc/posgres*
@@ -86,7 +87,7 @@ COMMAND_LIST=( 'hostname -s' 'hostname -d' 'hostname -f' 'hostname -i' 'ip -4 ad
 #----------------------------------------------------------------------
 # comandos a serem executados para captura de informacoes de aplicacoes
 #----------------------------------------------------------------------
-APP_COMMAND_LIST=( 'rpm -qa | grep apache' 'rpm -qa | grep php' 'rpm -qa | grep postgre' 'php -r phpinfo \(\)\;' 'rpm -qa | grep java' 'java -version 2>>' 'which java' 'which javac' 'env | grep -i java' 'pgrep -f jboss' 'env | grep -i jboss' 'echo $JBOSS_HOME' 'echo $JBOSS_CONSOLE' 'netstat -tulpn | grep `pgrep org.jboss.Main`' 'tree -L 1 -d $JBOSS_HOME/server' 'ls -lh $JBOSS_HOME/server' 'ps aux | grep jboss' 'ps aux | grep postgres' 'tar -cvzf /tmp/GETFILES/pg_conf.tar.gz /var/lib/pgsql/data/post*.conf' 'du -h /var/lib/pgsql/' 'rpm -qa | grep mysql' 'rpm -qa | grep maria' 'ps aux | grep mysql' 'du -h /var/lib/mysql/' 'du -h /srv/' 'du -h /opt/' 'du -h /var/' 'php -i' 'php -v' 'php -m' 'apache2ctl -v' 'apache2ctl -V' 'apache2ctl -l' 'apache2ctl -S' 'apache2ctl -M' 'apache2ctl -t' 'netstat -platun') 
+APP_COMMAND_LIST=( 'rpm -qa | grep apache' 'rpm -qa | grep php' 'rpm -qa | grep postgre' 'php -r phpinfo \(\)\;' 'rpm -qa | grep java' 'which java' 'which javac' 'env | grep -i java' 'pgrep -f jboss' 'env | grep -i jboss' 'echo $JBOSS_HOME' 'echo $JBOSS_CONSOLE' 'netstat -tulpn | grep `pgrep org.jboss.Main`' 'tree -L 1 -d $JBOSS_HOME/server' 'ls -lh $JBOSS_HOME/server' 'ps aux | grep jboss' 'ps aux | grep postgres' 'tar -cvzf /tmp/GETFILES/pg_conf.tar.gz /var/lib/pgsql/data/post*.conf' 'du -h /var/lib/pgsql/' 'rpm -qa | grep mysql' 'rpm -qa | grep maria' 'ps aux | grep mysql' 'du -h /var/lib/mysql/' 'du -h /srv/' 'du -h /opt/' 'du -h /var/' 'php -i' 'php -v' 'php -m' 'apache2ctl -v' 'apache2ctl -V' 'apache2ctl -l' 'apache2ctl -S' 'apache2ctl -M' 'apache2ctl -t' 'netstat -platun') 
 #----------------------------------------------------------------------
 # dicionario da lista de comandos para captura de informacoes de aplicacoes
 #----------------------------------------------------------------------
@@ -111,11 +112,13 @@ function RUN_COMMANDS () {
 			#verifica se o arquivo de log existe, se nao cria ou faz o appende no arquivo ja existente
 			if [ -f "$FILE_TMP_COMMAND_OUT_LOG" ]
 			then
-                		echo "#===============================================================================" >> $FILE_TMP_COMMAND_OUT_LOG
-				$COMMAND 2>&1 2>> $FILE_TMP_COMMAND_OUT_LOG
+                                echo "# INICIO ===============================" $COMMAND "================================================" >> $FILE_TMP_COMMAND_OUT_LOG
+				$COMMAND 2>&1 >> $FILE_TMP_COMMAND_OUT_LOG
+                                echo "# FIM ===============================" $COMMAND "================================================" >> $FILE_TMP_COMMAND_OUT_LOG
 			else
-                		echo "#===============================================================================" >> $FILE_TMP_COMMAND_OUT_LOG
-				$COMMAND 2>&1 2>> $FILE_TMP_COMMAND_OUT_LOG
+                                echo "# INICIO ===============================" $COMMAND "================================================" >> $FILE_TMP_COMMAND_OUT_LOG				
+				$COMMAND 2>&1 >> $FILE_TMP_COMMAND_OUT_LOG
+                                echo "# FIM ===============================" $COMMAND "================================================" >> $FILE_TMP_COMMAND_OUT_LOG
 			fi
 		else
 		#caso o binario não exista, loga a execao
@@ -131,6 +134,10 @@ function RUN_COMMANDS () {
 #===============================================================================
 function RUN_APP_COMMANDS () {
 	#processa os arquivos
+
+	#pega a versao do java
+	java -version 2>> /tmp/GETFILES/java-version.log
+
 	# intao a "#" na frente do nome da array e importante
 	for (( i = 0; i < ${#APP_COMMAND_LIST[@]}; i++ )) ; do
 		#define o path de cada arquivo
@@ -143,11 +150,13 @@ function RUN_APP_COMMANDS () {
 			#verifica se o arquivo de log para a saida dos comandos ja existe, se nao cria ou faz o appende no arquivo ja existente
 			if [ -f "$FILE_TMP_COMMAND_OUT_LOG" ]
 			then
-                		echo "#===============================================================================" >> $FILE_TMP_COMMAND_OUT_LOG
-				$COMMAND 2>&1 2>> $FILE_TMP_COMMAND_OUT_LOG
+                		echo "# INICIO ===============================" $COMMAND "================================================" >> $FILE_TMP_COMMAND_OUT_LOG
+				$COMMAND 2>&1 >> $FILE_TMP_COMMAND_OUT_LOG
+                                echo "# FIM ===============================" $COMMAND "================================================" >> $FILE_TMP_COMMAND_OUT_LOG
 			else
-                		echo "#===============================================================================" >> $FILE_TMP_COMMAND_OUT_LOG
-				$COMMAND 2>&1 2>> $FILE_TMP_COMMAND_OUT_LOG
+                		echo "# INICIO ===============================" $COMMAND "================================================" >> $FILE_TMP_COMMAND_OUT_LOG
+				$COMMAND 2>&1 >> $FILE_TMP_COMMAND_OUT_LOG
+                                echo "# FIM ===============================" $COMMAND "================================================" >> $FILE_TMP_COMMAND_OUT_LOG
 			fi
 		else
 		#caso o binario não exista, loga a execao
@@ -385,6 +394,18 @@ function ENDSCRIPT () {
 	ds=$(echo "$dt3-60*$dm" | bc)
 
 
+
+	if [ $1 = 1 ] ; then
+		echo
+		echo #===============================================================================
+		echo "Erros impediram o script de executar com sucesso."
+		echo "veja o arquivo de log"
+		echo #===============================================================================
+		echo
+		exit $1
+	fi
+
+
 	echo "#===============================================================================" >> $FILE_TMP_COMMAND_OUT_LOG
 	echo "Total runtime: (dia - hora - minutos - segundos)\n" $dd $dh $dm $ds  >> $FILE_TMP_COMMAND_OUT_LOG
 	echo "INICIO: "$STARTSCRIPTTIME >> $FILE_TMP_COMMAND_OUT_LOG
@@ -392,7 +413,7 @@ function ENDSCRIPT () {
 	echo "SAINDO COM STATUS: " $1 >> $FILE_TMP_COMMAND_OUT_LOG
 	echo "#===============================================================================" >> $FILE_TMP_COMMAND_OUT_LOG
 	
-	OUTPUTLOG="/tmp/get-info-"`hostname`".zip"
+	OUTPUTLOG="/tmp/"`hostname`"get-info.zip"
 	zip -r -9 $OUTPUTLOG $TMP_FOLDER_TO_FILES
 	rm -rf $TMP_FOLDER_TO_FILES
 
