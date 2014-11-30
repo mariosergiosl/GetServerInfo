@@ -285,7 +285,7 @@ function SEARCH_SPACE () {
 			echo
                 	echo "espaco em Gb -1 "  >> $FILE_TMP_COMMAND_OUT_LOG
 			echo
-                	if [ `echo $FTMPDIR | grep [0-9]` > 4 ] ; then
+                	if [ `echo $INTFTMPDIR` -gt 4 ] ; then
 				echo
                         	echo "espaco maior que 4Gb iniciando coleta - 1"  >> $FILE_TMP_COMMAND_OUT_LOG
 				echo "executando comandos - 1"  >> $FILE_TMP_COMMAND_OUT_LOG
@@ -336,7 +336,7 @@ function SEARCH_SPACE () {
 
         	if [ `echo $?` -eq "0" ] ; then
                 	echo "espaco em giga - 2"  >> $FILE_TMP_COMMAND_OUT_LOG
-                	if [ `echo $ROOTDIR | grep [0-9]` > 4 ] ; then
+                	if [ `echo $INTROOTDIR` -gt 4 ] ; then
 				echo
                         	echo "espaco maior que 4Gb iniciando coleta - 2"  >> $FILE_TMP_COMMAND_OUT_LOG
 				echo "executando comandos 2"  >> $FILE_TMP_COMMAND_OUT_LOG
@@ -395,7 +395,7 @@ function ENDSCRIPT () {
 
 
 
-	if [ $1 = 1 ] ; then
+	if [ $1 -eq 1 ] ; then
 		echo
 		echo #===============================================================================
 		echo "Erros impediram o script de executar com sucesso."
@@ -443,8 +443,11 @@ function MAIN () {
         df -h | grep /tmp
         TMPPART=$?
         ROOTDIR=`df -h / | grep "/" | awk '{print $4}'`
+        INTROOTDIR=`df -h / | grep "/" | awk '{print $4}' | tr -d [:alpha:]`
+	INTROOTDIR=${INTROOTDIR%.*}	
         FTMPDIR=`df -h / | grep "/tmp" | awk '{print $4}'`
-
+        INTFTMPDIR=`df -h / | grep "/tmp" | awk '{print $4}' | tr -d [:alpha:]`
+	INTFTMPDIR=${INTFTMPDIR%.*}
 
 	#----------------------------------------------------------------------
 	# verifica se o binario do zip esta instalado no sistema
@@ -468,7 +471,6 @@ function MAIN () {
 	# chama a primeira funcao
 	#----------------------------------------------------------------------
 	SEARCH_SPACE
-
 }
 
 MAIN
