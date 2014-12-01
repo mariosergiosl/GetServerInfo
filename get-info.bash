@@ -442,11 +442,11 @@ function MAIN () {
 
         df -h | grep /tmp
         TMPPART=$?
-        ROOTDIR=`df -h / | grep "/" | awk '{print $4}'`
-        INTROOTDIR=`df -h / | grep "/" | awk '{print $4}' | tr -d [:alpha:]`
+        ROOTDIR=`df -h / | grep "/" | awk '{print $3}'`
+        INTROOTDIR=`df -h / | grep "/" | awk '{print $3}' | tr -d [:alpha:]`
 	INTROOTDIR=${INTROOTDIR%.*}	
-        FTMPDIR=`df -h / | grep "/tmp" | awk '{print $4}'`
-        INTFTMPDIR=`df -h / | grep "/tmp" | awk '{print $4}' | tr -d [:alpha:]`
+        FTMPDIR=`df -h / | grep "/tmp" | awk '{print $3}'`
+        INTFTMPDIR=`df -h / | grep "/tmp" | awk '{print $3}' | tr -d [:alpha:]`
 	INTFTMPDIR=${INTFTMPDIR%.*}
 
 	#----------------------------------------------------------------------
