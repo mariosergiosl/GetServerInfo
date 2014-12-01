@@ -413,7 +413,7 @@ function ENDSCRIPT () {
 	echo "SAINDO COM STATUS: " $1 >> $FILE_TMP_COMMAND_OUT_LOG
 	echo "#===============================================================================" >> $FILE_TMP_COMMAND_OUT_LOG
 	
-	OUTPUTLOG="/tmp/"`hostname`"get-info.zip"
+	OUTPUTLOG="/tmp/"`hostname`".get-info.zip"
 	zip -r -9 $OUTPUTLOG $TMP_FOLDER_TO_FILES
 	rm -rf $TMP_FOLDER_TO_FILES
 
