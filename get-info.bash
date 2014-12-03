@@ -286,7 +286,7 @@ function SEARCH_SPACE () {
                 	echo "espaco em Gb -1 "  >> $FILE_TMP_COMMAND_OUT_LOG
 			echo
 			# o cut e necessario para tranformar o valor em inteiro
-                	if [ `echo $INTFTMPDIR | cut -d "," -f 1` -gt 2 ] ; then
+                	if [ `echo $INTFTMPDIR | cut -d "," -f 1` -ge 2 ] ; then
 				echo
                         	echo "espaco maior que 4Gb iniciando coleta - 1"  >> $FILE_TMP_COMMAND_OUT_LOG
 				echo "executando comandos - 1"  >> $FILE_TMP_COMMAND_OUT_LOG
@@ -338,7 +338,7 @@ function SEARCH_SPACE () {
         	if [ `echo $?` -eq "0" ] ; then
                 	echo "espaco em giga - 2"  >> $FILE_TMP_COMMAND_OUT_LOG
                 	# o cut e necessario para tranformar o retorno em inteiro
-                	if [ `echo $INTROOTDIR | cut -d "," -f 1` -gt 2  ] ; then
+                	if [ `echo $INTROOTDIR | cut -d "," -f 1` -ge 2  ] ; then
 				echo
                         	echo "espaco maior que 4Gb iniciando coleta - 2"  >> $FILE_TMP_COMMAND_OUT_LOG
 				echo "executando comandos 2"  >> $FILE_TMP_COMMAND_OUT_LOG
