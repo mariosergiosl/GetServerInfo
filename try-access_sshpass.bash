@@ -1,4 +1,33 @@
 #!/bin/bash
+#===================================================================================
+#
+# FILE: try-access_sshpass.bash
+#
+# USAGE: try-access_sshpass.bash
+#
+# DESCRIPTION:  Testa o acesso a servidores com ate 6 senhas diferentes.
+#               testa se o servidor e alcansado via nome.
+#
+# OPTIONS: ---
+# REQUIREMENTS: Password files (arquivos de senha .MyPass2011-2015 e 0000)
+# BUGS: ---
+# NOTES: A saida no arquivo de log exibe as tentativas e os codigos de erros
+#
+#
+# AUTHOR: Mario Luz, mario.mssl at gmail.com
+#         https://github.com/mariosergiosl/GetServerInfo/blob/master/try-access_sshpass.bash
+# COMPANY:
+# VERSION: Drafth 0.1
+# CREATED: 09.12.2014 - 17:11:50
+# ROADMAP:
+# REVISION: 01-25.09.2014
+#===================================================================================
+
+
+#----------------------------------------------------------------------
+# declaracao de variaveis
+#----------------------------------------------------------------------
+
 
 for server in `cat serverZ`;do 
 	sshpass -f .MyPass2011 ssh -t -o ConnectTimeout=1 -o ConnectTimeout=1 -o StrictHostKeyChecking=no root@$server exit; 
