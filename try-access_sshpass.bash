@@ -9,7 +9,7 @@
 #               testa se o servidor e alcansado via nome.
 #
 # OPTIONS: ---
-# REQUIREMENTS: Password files (arquivos de senha .MyPass2011-2015 e 0000)
+# REQUIREMENTS: sshpass package and Password files (arquivos de senha .MyPass2011-2015 e 0000)
 # BUGS: ---
 # NOTES: A saida no arquivo de log exibe as tentativas e os codigos de erros
 #
