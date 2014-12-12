@@ -1,9 +1,9 @@
 #!/bin/bash
 #===================================================================================
 #
-# FILE: try-access_sshpass.bash
+# FILE: try-access_sshpass-and-run-get-info.bash
 #
-# USAGE: try-access_sshpass.bash
+# USAGE: try-access_sshpass-and-run-get-info.bash
 #
 # DESCRIPTION: 	Testa o acesso a servidores com ate 6 senhas diferentes.
 #		testa se o servidor e alcansado via nome.
